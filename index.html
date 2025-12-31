@@ -11,7 +11,7 @@
             --bg-color: #050a0f;
             --accent-color: #00f2ff;
             --text-color: #ffffff;
-            --panel-bg: rgba(5, 20, 30, 0.9); /* 少し不透明度を上げて読みやすく */
+            --panel-bg: rgba(5, 20, 30, 0.95);
         }
 
         body {
@@ -20,12 +20,11 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Orbitron', 'Noto Sans JP', sans-serif;
-            overflow: hidden;
-            height: 100vh;
+            overflow: hidden; /* 基本は固定、パネル表示時にJSで制御も可 */
+            height: 100dvh; /* モバイルのツールバーを考慮した高さ */
             display: flex;
             justify-content: center;
             align-items: center;
-            /* タップ時の青いハイライトを消す（スマホ操作感向上） */
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -35,59 +34,65 @@
             inset: 0;
             background-image: linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px; /* スマホ用に少し細かく */
+            background-size: 20px 20px;
             z-index: -1;
         }
 
-        /* --- ナビゲーション (スマホ対応) --- */
+        /* --- ナビゲーション --- */
         .matrix-nav {
             position: fixed;
-            top: 20px;
-            right: 0;
-            left: 0;
+            top: env(safe-area-inset-top, 20px);
+            width: 100%;
             display: flex;
-            justify-content: center; /* 中央寄せ */
-            gap: 20px;
+            justify-content: center;
+            gap: 15px;
             z-index: 200;
+            padding: 10px 0;
         }
 
         @media (min-width: 768px) {
             .matrix-nav {
                 top: 30px;
                 right: 40px;
-                left: auto;
+                justify-content: flex-end;
                 gap: 40px;
+                padding-right: 40px;
             }
         }
 
         .nav-item {
             cursor: pointer;
-            font-size: 0.9rem; /* スマホ用に小さく */
+            font-size: 0.8rem;
             letter-spacing: 1px;
             color: var(--accent-color);
             text-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
             transition: 0.3s;
+            padding: 5px 10px;
+            border: 1px solid transparent;
+        }
+        
+        .nav-item:hover {
+            border: 1px solid var(--accent-color);
+            background: rgba(0, 242, 255, 0.1);
         }
 
         @media (min-width: 768px) {
-            .nav-item { font-size: 1.2rem; letter-spacing: 2px; }
+            .nav-item { font-size: 1.1rem; letter-spacing: 2px; }
         }
 
         /* --- 中央メイン構造 --- */
         .main-stage {
             position: relative;
             width: 100%;
-            max-width: 600px;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+            perspective: 1000px;
         }
 
         .circle-wrapper {
             position: absolute;
-            width: 100%;
-            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -95,61 +100,63 @@
         }
 
         .center-logo {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: bold;
             color: var(--text-color);
             text-shadow: 0 0 20px var(--accent-color);
             z-index: 50;
             cursor: pointer;
-            margin-top:35px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        @media (min-width: 768px) {
+            .center-logo { font-size: 1.5rem; }
         }
 
         .skills-container {
             position: absolute;
-            width: 200px;
+            width: 140px;
             display: flex;
             flex-wrap: wrap;
             justify-content:center;
-            align-content: center;
-            gap: 15px;
+            gap: 10px;
             z-index: 15;
             pointer-events: none;
         }
 
         .skill-icon {
-            width: 35px;
-            height: 35px;
+            width: 25px;
+            height: 25px;
             fill: var(--accent-color);
-            filter: drop-shadow(0 0 8px var(--accent-color));
+            filter: drop-shadow(0 0 5px var(--accent-color));
             opacity: 0;
-            transform: translateY(30px) scale(0.5);
+        }
+
+        @media (min-width: 768px) {
+            .skills-container { width: 200px; gap: 20px; }
+            .skill-icon { width: 40px; height: 40px; }
         }
 
         .circle-text-container {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            animation: rotate-slow 25s linear infinite;
+            animation: rotate-slow 30s linear infinite;
             z-index: 20;
             pointer-events: none; 
         }
 
         .char {
             position: absolute;
-            left: 50%;
-            top: 50%;
-            font-size: 1.1rem; /* スマホ用に小さく */
+            font-size: 0.9rem;
             font-weight: 700;
             transform-origin: 0 0;
             display: inline-block;
-            cursor: pointer;
-            user-select: none;
             pointer-events: auto;
-            transition: color 0.2s;
+            color: rgba(255,255,255,0.8);
         }
 
         @media (min-width: 768px) {
-            .char { font-size: 1.8rem; }
+            .char { font-size: 1.5rem; }
         }
 
         @keyframes rotate-slow {
@@ -157,41 +164,45 @@
             to { transform: rotate(360deg); }
         }
 
-        /* --- コンテンツパネル (レスポンシブ) --- */
+        /* --- コンテンツパネル --- */
         .content-panel {
             position: absolute;
-            width: 85%; /* スマホでは横幅いっぱい近く */
-            max-width: 450px;
-            max-height: 70vh;
+            width: 85%;
+            max-width: 500px;
+            max-height: 75vh;
             background: var(--panel-bg);
             border: 1px solid var(--accent-color);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
-            padding: 25px; /* スマホ用にパディング調整 */
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+            padding: 30px 20px;
             z-index: 150;
             opacity: 0;
             pointer-events: none;
-            transform: scale(0.8) translateY(20px);
-            backdrop-filter: blur(15px);
+            transform: scale(0.9) translateY(30px);
+            backdrop-filter: blur(20px);
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) transparent;
         }
 
         .panel-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+            position: sticky;
+            top: -10px;
+            float: right;
             color: var(--accent-color);
             cursor: pointer;
             font-size: 0.7rem;
             border: 1px solid var(--accent-color);
-            padding: 2px 8px;
+            padding: 4px 10px;
+            background: var(--bg-color);
+            z-index: 10;
         }
 
         h2 {
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 10px;
-            margin-top: 10px;
-            letter-spacing: 4px;
-            font-size: 1.4rem;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 15px;
+            margin-bottom: 25px;
+            letter-spacing: 3px;
+            font-size: 1.2rem;
         }
 
         .skill-list {
@@ -200,25 +211,21 @@
         }
 
         .skill-list li {
-            margin: 20px 0;
-            display: flex;
-            flex-direction: column; /* スマホでは縦並び */
-            gap: 8px;
+            margin: 15px 0;
         }
 
-        @media (min-width: 768px) {
-            .skill-list li { flex-direction: row; justify-content: space-between; align-items: center; }
+        .skill-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
         }
 
         .bar-bg {
             width: 100%;
-            height: 6px;
+            height: 4px;
             background: rgba(255,255,255,0.1);
-            position: relative;
-        }
-
-        @media (min-width: 768px) {
-            .bar-bg { width: 60%; }
+            overflow: hidden;
         }
 
         .bar-fill {
@@ -228,7 +235,7 @@
             box-shadow: 0 0 10px var(--accent-color);
         }
 
-        p { font-size: 0.9rem; line-height: 1.6; font-family: 'Noto Sans JP'; font-weight: 300; }
+        p { font-size: 0.9rem; line-height: 1.8; font-family: 'Noto Sans JP'; font-weight: 300; }
     </style>
 </head>
 <body>
@@ -244,48 +251,47 @@
     <div class="main-stage">
         <div class="circle-wrapper" id="homeView">
             <div class="skills-container" id="miniIcons">
-                <svg class="skill-icon" viewBox="0 0 24 24"><path d="M3,3H21V21H3V3M13.71,17.88C14.83,17.88 15.53,17.53 16.07,16.83L15.26,15.58C14.89,16.07 14.41,16.32 13.78,16.32C12.84,16.32 12.22,15.61 12.22,14.44V11.38H13.92V9.94H12.22V8.31H10.53V9.94H8.91V11.38H10.53V14.79C10.53,16.77 11.76,17.88 13.71,17.88M19.23,15.58L18.42,16.83C18.95,17.53 19.65,17.88 20.77,17.88C22.72,17.88 23.96,16.77 23.96,14.79V8.31H22.26V14.79C22.26,16.06 21.55,16.71 20.53,16.71C19.83,16.71 19.29,16.44 18.88,15.86L19.23,15.58Z" transform="translate(-5, -3) scale(0.9)"/></svg>
+                <svg class="skill-icon" viewBox="0 0 24 24"><path d="M3,3H21V21H3V3M13.71,17.88C14.83,17.88 15.53,17.53 16.07,16.83L15.26,15.58C14.89,16.07 14.41,16.32 13.78,16.32C12.84,16.32 12.22,15.61 12.22,14.44V11.38H13.92V9.94H12.22V8.31H10.53V9.94H8.91V11.38H10.53V14.79C10.53,16.77 11.76,17.88 13.71,17.88M19.23,15.58L18.42,16.83C18.95,17.53 19.65,17.88 20.77,17.88C22.72,17.88 23.96,16.77 23.96,14.79V8.31H22.26V14.79C22.26,16.06 21.55,16.71 20.53,16.71C19.83,16.71 19.29,16.44 18.88,15.86L19.23,15.58Z"/></svg>
                 <svg class="skill-icon" viewBox="0 0 24 24" style="fill:none; stroke: var(--accent-color); stroke-width: 1.5;"><ellipse cx="12" cy="12" rx="10" ry="4.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="2.5" fill="var(--accent-color)"/></svg>
                 <svg class="skill-icon" viewBox="0 0 24 24"><path d="M12,17.56L16.07,16.43L16.62,10.33H9.38L9.2,8.3H16.8L17,6.31H7L7.56,12.32H14.5L14.22,14.9L12,15.5L9.78,14.9L9.64,13.24H7.64L7.93,16.43L12,17.56M4.07,3H19.93L18.5,19.2L12,21L5.5,19.2L4.07,3Z" /></svg>
                 <svg class="skill-icon" viewBox="0 0 24 24"><path d="M4.07,3H19.93L18.5,19.2L12,21L5.5,19.2L4.07,3M16.8,6.31H7L7.56,12.32H14.5L14.22,14.9L12,15.5L9.78,14.9L9.64,13.24H7.64L7.93,16.43L12,17.56L16.07,16.43L16.62,10.33H9.38L9.2,8.3H16.8L17,6.31Z" /></svg>
             </div>
-            <div class="center-logo" id="mainLogo">EVOLUTION</div>
+            <!--<div class="center-logo" id="mainLogo">TECH EVOLUTION</div>-->
             <div class="circle-text-container" id="circleContainer"></div>
         </div>
 
         <div class="content-panel" id="aboutPanel">
             <div class="panel-close">CLOSE [X]</div>
             <h2>ABOUT</h2>
-            <p>NAME: Webillion<br>STATUS: EVOLVING</p>
-            <p>ユーザーに寄り添いながら社内SEとして10年以上活動。、趣味で次世代のユーザーインターフェースを構築し、視覚体験の革命を追求しています。</p>
+            <p><strong>NAME:</strong> Webillion<br><strong>STATUS:</strong> EVOLVING</p>
+            <p>社内SEとして10年以上のキャリア。ユーザー目線を第一に、次世代のUI/UXと最新テクノロジーを融合させた視覚体験を追求しています。</p>
         </div>
 
         <div class="content-panel" id="skillPanel">
             <div class="panel-close">CLOSE [X]</div>
             <h2>ANALYSIS</h2>
             <ul class="skill-list">
-                <li><span>MicrosoftExcelVBA</span><div class="bar-bg"><div class="bar-fill" data-percent="90"></div></div></li>
-                <li><span>HTML</span><div class="bar-bg"><div class="bar-fill" data-percent="75"></div></div></li>
-                <li><span>CSS</span><div class="bar-bg"><div class="bar-fill" data-percent="50"></div></div></li>
-                <li><span>English</span><div class="bar-bg"><div class="bar-fill" data-percent="55"></div></div></li>
+                <li><div class="skill-info"><span>Excel VBA</span><span>90%</span></div><div class="bar-bg"><div class="bar-fill" data-percent="90"></div></div></li>
+                <li><div class="skill-info"><span>HTML / CSS</span><span>75%</span></div><div class="bar-bg"><div class="bar-fill" data-percent="75"></div></div></li>
+                <li><div class="skill-info"><span>JavaScript</span><span>60%</span></div><div class="bar-bg"><div class="bar-fill" data-percent="60"></div></div></li>
+                <li><div class="skill-info"><span>UI Design</span><span>55%</span></div><div class="bar-bg"><div class="bar-fill" data-percent="55"></div></div></li>
             </ul>
         </div>
     </div>
 
     <script>
-        // --- 1. マトリックス・テキストエフェクト ---
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%'\"#&_";
+        // 1. マトリックス・テキスト
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         document.querySelectorAll('.nav-item').forEach(item => {
             const originalText = item.innerText;
             let interval = null;
-            // モバイルでの誤爆を防ぐため、mouseoverだけでなくclickでも一瞬走るようにすると面白い
-            item.onmouseover = event => {
+            item.onmouseenter = event => {
                 let iteration = 0;
                 clearInterval(interval);
                 interval = setInterval(() => {
                     event.target.innerText = event.target.innerText.split("").map((l, i) => {
                         if(i < iteration) return originalText[i];
-                        return letters[Math.floor(Math.random() * letters.length)];
+                        return letters[Math.floor(Math.random() * 26)];
                     }).join("");
                     if(iteration >= originalText.length) clearInterval(interval);
                     iteration += 1 / 3;
@@ -293,17 +299,15 @@
             };
         });
 
-        // --- 2. 円形テキストの配置 (スマホ画面サイズに合わせて半径を変更) ---
-        const text = "未来的テクノロジーの進化と革命";
+        // 2. 円形テキストの配置 (改善版)
+        const text = "FUTURE TECHNOLOGY EVOLUTION REVOLUTION ";
         const container = document.getElementById('circleContainer');
         
-        // ★ 画面幅に応じて半径を計算 (スマホなら140px、PCなら200px)
-        const getRadius = () => window.innerWidth < 768 ? 140 : 200;
-        let currentRadius = getRadius();
-
         function layoutCircle() {
-            container.innerHTML = ""; // 再配置用にクリア
-            currentRadius = getRadius();
+            container.innerHTML = "";
+            // 画面の幅と高さの小さい方を基準に半径を計算（はみ出し防止）
+            const minSize = Math.min(window.innerWidth, window.innerHeight);
+            const radius = window.innerWidth < 768 ? minSize * 0.35 : 220;
             
             text.split("").forEach((char, i) => {
                 const span = document.createElement('span');
@@ -311,89 +315,53 @@
                 span.classList.add('char');
                 
                 const angle = i * (360 / text.length);
-                const x = currentRadius * Math.cos(angle * (Math.PI / 180));
-                const y = currentRadius * Math.sin(angle * (Math.PI / 180));
+                const x = radius * Math.cos(angle * (Math.PI / 180));
+                const y = radius * Math.sin(angle * (Math.PI / 180));
                 
                 gsap.set(span, { x: x, y: y, rotation: angle + 90 });
-
-                // スマホでも反応するようにmouseenter/touchstart両対応に
-                const handleEnter = () => {
-                    gsap.to(span, {
-                        x: x * 1.25,
-                        y: y * 1.25,
-                        scale: 1.4,
-                        duration: 0.4,
-                        ease: "back.out(2)",
-                        color: "var(--accent-color)",
-                        textShadow: "0 0 20px var(--accent-color)"
-                    });
-                };
-
-                const handleLeave = () => {
-                    gsap.to(span, {
-                        x: x, y: y, scale: 1,
-                        duration: 0.5, ease: "power2.out",
-                        color: "#ffffff", textShadow: "none"
-                    });
-                };
-
-                span.addEventListener('mouseenter', handleEnter);
-                span.addEventListener('mouseleave', handleLeave);
-                span.addEventListener('touchstart', handleEnter);
-                span.addEventListener('touchend', handleLeave);
-
                 container.appendChild(span);
             });
         }
 
-        layoutCircle();
-        // リサイズ時に再配置（PCでの動作確認用）
         window.addEventListener('resize', layoutCircle);
+        layoutCircle();
 
-        // --- 3. スキルアイコンのアニメーション ---
-        const skillIcons = document.querySelectorAll('.skill-icon');
-        gsap.to(skillIcons, {
-            opacity: 1, y: 0, scale: 1, duration: 1, delay: 1,
-            ease: "back.out(1.5)", stagger: 0.15,
-            onComplete: startFloating
+        // 3. アニメーション
+        gsap.to(".skill-icon", {
+            opacity: 1, y: 0, scale: 1, duration: 1, delay: 0.5,
+            stagger: 0.1, ease: "back.out(1.7)",
+            onComplete: () => {
+                gsap.to(".skill-icon", {
+                    y: "-=8", duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut",
+                    stagger: { each: 0.2, from: "random" }
+                });
+            }
         });
 
-        function startFloating() {
-            skillIcons.forEach(icon => {
-                gsap.to(icon, {
-                    y: "-=10", duration: 2 + Math.random() * 2,
-                    repeat: -1, yoyo: true, ease: "sine.inOut", delay: Math.random() * 2
-                });
-            });
-        }
-
-        // --- 4. ページ切り替えロジック ---
-        const homeView = document.getElementById('homeView');
+        // 4. パネル制御
         const panels = {
             about: document.getElementById('aboutPanel'),
             skill: document.getElementById('skillPanel')
         };
+        const homeView = document.getElementById('homeView');
 
         function showPanel(target) {
+            // 全パネルを閉じる
             Object.values(panels).forEach(p => {
-                gsap.to(p, { opacity: 0, scale: 0.8, y: 20, duration: 0.4, pointerEvents: "none" });
+                gsap.to(p, { opacity: 0, scale: 0.9, y: 20, duration: 0.3, pointerEvents: "none" });
             });
 
             if (target === 'home') {
-                gsap.to(homeView, { opacity: 1, scale: 1, duration: 0.8, filter: "blur(0px)", pointerEvents: "auto" });
+                gsap.to(homeView, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.6 });
             } else {
-                // スマホでは背景の要素をさらに薄く、かつボケを強くする
-                gsap.to(homeView, { opacity: 0.1, scale: 0.9, duration: 0.8, filter: "blur(8px)", pointerEvents: "none" });
+                gsap.to(homeView, { opacity: 0.2, filter: "blur(10px)", scale: 0.9, duration: 0.6 });
                 const p = panels[target];
-                gsap.to(p, { 
-                    opacity: 1, scale: 1, y: 0, duration: 0.6, delay: 0.2, 
-                    pointerEvents: "auto", ease: "power3.out" 
-                });
+                gsap.to(p, { opacity: 1, scale: 1, y: 0, duration: 0.5, delay: 0.2, pointerEvents: "auto" });
 
                 if (target === 'skill') {
                     gsap.fromTo(p.querySelectorAll(".bar-fill"), 
                         { width: "0%" },
-                        { width: (i, el) => el.dataset.percent + "%", duration: 1.5, ease: "power2.out", delay: 0.5 }
+                        { width: (i, el) => el.dataset.percent + "%", duration: 1.2, ease: "power2.out", delay: 0.4 }
                     );
                 }
             }
@@ -404,14 +372,10 @@
         });
 
         document.querySelectorAll('.panel-close').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showPanel('home');
-            });
+            btn.addEventListener('click', () => showPanel('home'));
         });
-
+        
         document.getElementById('mainLogo').addEventListener('click', () => showPanel('home'));
-
     </script>
 </body>
 </html>
